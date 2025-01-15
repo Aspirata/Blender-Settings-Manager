@@ -55,7 +55,7 @@ jobs:
 
       - name: Build application using PyInstaller
         run: |
-          pyinstaller --onefile --distpath ./dist --workpath ./BSM.py
+          pyinstaller --onefile --distpath ./dist --workpath ./build BSM.py
         working-directory: ${{ github.workspace }}
 
       - name: Create AppImage (Linux)
