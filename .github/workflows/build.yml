@@ -10,27 +10,26 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Запуск на Linux для AppImage
+    runs-on: ${{ matrix.os }}  # Используем matrix.os вместо фиксированного значения
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]  # Разделяем сборку для Linux и Windows
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'  # Укажите версию Python
 
       - name: Install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
+          sudo apt-get update
           sudo apt-get install -y \
             build-essential \
             libfuse2 \
-            pyqt6 \
-            pyinstaller \
             libssl-dev \
             libbz2-dev \
             libreadline-dev \
@@ -45,17 +44,18 @@ jobs:
             libglib2.0-dev \
             libfontconfig1 libx11-6 libxext6 \
             wget
-          pip install pyinstaller
+          pip install -U pip
+          pip install pyinstaller PyQt6
 
       - name: Install dependencies for Windows
         if: runner.os == 'Windows'
         run: |
-          choco install python --version=3.10
-          pip install pyinstaller
+          python -m pip install -U pip
+          pip install pyinstaller PyQt6
 
       - name: Build application using PyInstaller
         run: |
-          pyinstaller --onefile --distpath ./dist --workpath ./build app.py
+          pyinstaller --onefile --name blender_settings_manager --distpath ./dist --workpath ./build app.py
         working-directory: ${{ github.workspace }}
 
       - name: Create AppImage (Linux)
@@ -63,19 +63,18 @@ jobs:
         run: |
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool.AppImage
           chmod +x appimagetool.AppImage
-          ./appimagetool.AppImage ./dist/appname
+          ./appimagetool.AppImage ./dist/blender_settings_manager
 
       - name: Upload .exe artifact (Windows)
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: appname.exe
-          path: ./dist/appname.exe
+          name: blender_settings_manager.exe
+          path: ./dist/blender_settings_manager.exe
 
       - name: Upload .AppImage artifact (Linux)
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: appname.AppImage
-          path: ./dist/appname.AppImage
-
+          name: blender_settings_manager.AppImage
+          path: ./dist/blender_settings_manager.AppImage
