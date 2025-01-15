@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'  # Укажите версию Python
+          python-version: '3.10'
 
       - name: Install dependencies for Linux
         if: runner.os == 'Linux'
@@ -55,7 +55,7 @@ jobs:
 
       - name: Build application using PyInstaller
         run: |
-          pyinstaller --onefile --name blender_settings_manager --distpath ./dist --workpath ./build app.py
+          pyinstaller --onefile --distpath ./dist --workpath ./BSM.py
         working-directory: ${{ github.workspace }}
 
       - name: Create AppImage (Linux)
@@ -63,18 +63,18 @@ jobs:
         run: |
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool.AppImage
           chmod +x appimagetool.AppImage
-          ./appimagetool.AppImage ./dist/blender_settings_manager
+          ./appimagetool.AppImage ./dist/BSM
 
       - name: Upload .exe artifact (Windows)
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v3
         with:
-          name: blender_settings_manager.exe
-          path: ./dist/blender_settings_manager.exe
+          name: BSM.exe
+          path: ./dist/BSM.exe
 
       - name: Upload .AppImage artifact (Linux)
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v3
         with:
-          name: blender_settings_manager.AppImage
-          path: ./dist/blender_settings_manager.AppImage
+          name: BSM.AppImage
+          path: ./dist/BSM.AppImage
