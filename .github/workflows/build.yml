@@ -23,30 +23,27 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies for Linux
+      - name: Create AppImage (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            libfuse2 \
-            libssl-dev \
-            libbz2-dev \
-            libreadline-dev \
-            libsqlite3-dev \
-            curl \
-            libncurses5-dev \
-            libgdbm-dev \
-            liblzma-dev \
-            tk-dev \
-            libffi-dev \
-            zlib1g-dev \
-            libglib2.0-dev \
-            libfontconfig1 libx11-6 libxext6 \
-            wget
-          pip install -U pip
-          pip install pyinstaller PyQt6
-
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          cp ./dist/BSM AppDir/usr/bin/
+          chmod +x AppDir/usr/bin/BSM
+          echo "[Desktop Entry]" > AppDir/usr/share/applications/BSM.desktop
+          echo "Name=BSM" >> AppDir/usr/share/applications/BSM.desktop
+          echo "Comment=My awesome BSM application" >> AppDir/usr/share/applications/BSM.desktop
+          echo "Exec=BSM" >> AppDir/usr/share/applications/BSM.desktop
+          echo "Icon=BSM" >> AppDir/usr/share/applications/BSM.desktop
+          echo "Terminal=false" >> AppDir/usr/share/applications/BSM.desktop
+          echo "Type=Application" >> AppDir/usr/share/applications/BSM.desktop
+          echo "Categories=Utility;" >> AppDir/usr/share/applications/BSM.desktop
+          touch AppDir/usr/share/icons/hicolor/256x256/apps/BSM.png
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool.AppImage
+          chmod +x appimagetool.AppImage
+          ./appimagetool.AppImage AppDir
+  
       - name: Install dependencies for Windows
         if: runner.os == 'Windows'
         run: |
@@ -63,13 +60,10 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin
           cp ./dist/BSM AppDir/usr/bin/
-
           chmod +x AppDir/usr/bin/BSM
-
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool.AppImage
           chmod +x appimagetool.AppImage
           ./appimagetool.AppImage AppDir
-
 
       - name: Upload .exe artifact (Windows)
         if: runner.os == 'Windows'
