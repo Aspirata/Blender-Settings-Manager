@@ -28,15 +28,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyqt6 pyinstaller
           
-          # Install system dependencies for Linux
+          # Linux-specific dependencies
           if [ "${{ runner.os }}" == "Linux" ]; then
             sudo apt-get update
             sudo apt-get install -y libxcb-shape0 libxkbcommon-x11-0 libxcb-cursor0
           fi
 
-          # Install dependencies for Windows using PowerShell
+          # Windows-specific dependencies (using PowerShell syntax)
           if ($Env:RUNNER_OS -eq "Windows") {
-            # Windows specific commands, if necessary
+            # Add Windows-specific commands if needed
             echo "Windows environment detected"
           }
 
