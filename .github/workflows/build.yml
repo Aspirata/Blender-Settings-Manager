@@ -10,14 +10,11 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
+        
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -27,49 +24,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyqt6 pyinstaller
-          if [ "${{ runner.os }}" == "Linux" ]; then
-            sudo apt-get update
-            sudo apt-get install -y libxcb-shape0 libxkbcommon-x11-0 libxcb-cursor0
-          fi
-        shell: bash
 
       - name: Build application using PyInstaller
         run: |
-          pyinstaller --clean --onefile --distpath ./dist --workpath ./build BSM.py
-        shell: bash
-
-      - name: Create AppImage using linuxdeploy (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          # Download linuxdeploy and PyInstaller plugin
-          wget -O linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/6/linuxdeploy-x86_64.AppImage
-          wget -O linuxdeploy-plugin-pyinstaller https://github.com/linuxdeploy/linuxdeploy-plugin-pyinstaller/releases/download/1/linuxdeploy-plugin-pyinstaller-x86_64.AppImage
-          chmod a+x linuxdeploy linuxdeploy-plugin-pyinstaller
-
-          # Create AppDir
-          mkdir -p ./AppDir/usr/bin
-          cp ./dist/BSM ./AppDir/usr/bin/
-
-          # Create desktop file
-          echo "[Desktop Entry]
-          Name=BSM
-          Exec=BSM
-          Type=Application" > ./AppDir/BSM.desktop
-
-          # Create AppImage
-          ./linuxdeploy --appdir ./AppDir --plugin pyinstaller --output appimage --verbose
-        shell: bash
+          pyinstaller --onefile --noconsole --distpath ./dist --workpath ./build BSM.py
 
       - name: Upload .exe artifact (Windows)
-        if: runner.os == 'Windows'
         uses: actions/upload-artifact@v3
         with:
           name: BSM.exe
           path: ./dist/BSM.exe
-
-      - name: Upload .AppImage artifact (Linux)
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v3
-        with:
-          name: BSM.AppImage
-          path: ./BSM-*.AppImage
