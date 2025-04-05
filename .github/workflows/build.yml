@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y fuse libfuse2 patchelf
+          sudo apt install -y fuse libfuse2 patchelf wget
           python -m pip install --upgrade pip
           pip install pyqt6 pyinstaller
 
@@ -67,16 +67,20 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp ./dist/BSM AppDir/usr/bin/
           chmod +x AppDir/usr/bin/BSM
-
-          # Если icon.png существует, скопировать его, иначе пропустить
-          if [ -f icon.png ]; then cp icon.png AppDir/application-default-icon.png; fi
-
-          echo "[Desktop Entry]
-          Name=BSM
-          Exec=BSM
-          Icon=application-default-icon
-          Type=Application
-          Categories=Utility;" > AppDir/BSM.desktop
+          if [ -f icon.png ]; then
+            cp icon.png AppDir/application-default-icon.png
+            desktop_icon="Icon=application-default-icon"
+          else
+            desktop_icon=""
+          fi
+          cat <<EOF > AppDir/BSM.desktop
+[Desktop Entry]
+Name=BSM
+Exec=BSM
+$desktop_icon
+Type=Application
+Categories=Utility;
+EOF
 
       - name: Build AppImage
         run: |
