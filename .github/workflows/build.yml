@@ -68,13 +68,15 @@ jobs:
           cp ./dist/BSM AppDir/usr/bin/
           chmod +x AppDir/usr/bin/BSM
 
+          # Скопировать иконку, если она есть в репозитории как icon.png
+          cp icon.png AppDir/application-default-icon.png
+
           echo "[Desktop Entry]
           Name=BSM
           Exec=BSM
           Icon=application-default-icon
           Type=Application
           Categories=Utility;" > AppDir/BSM.desktop
-
 
       - name: Build AppImage
         run: |
