@@ -2,21 +2,20 @@ name: Build Python App
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build:
+  build-windows:
+    name: Build .exe on Windows
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-        
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -29,8 +28,60 @@ jobs:
         run: |
           pyinstaller --onefile --noconsole --distpath ./dist --workpath ./build BSM.py
 
-      - name: Upload .exe artifact (Windows)
-        uses: actions/upload-artifact@v3
+      - name: Upload .exe artifact
+        uses: actions/upload-artifact@v4
         with:
           name: BSM.exe
           path: ./dist/BSM.exe
+
+  build-linux:
+    name: Build .AppImage on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y fuse libfuse2 patchelf
+          python -m pip install --upgrade pip
+          pip install pyqt6 pyinstaller
+
+      - name: Build application using PyInstaller
+        run: |
+          pyinstaller --onefile --distpath ./dist --workpath ./build BSM.py
+
+      - name: Download appimagetool
+        run: |
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+      - name: Create AppDir structure
+        run: |
+          mkdir -p AppDir/usr/bin
+          cp ./dist/BSM AppDir/usr/bin/
+          chmod +x AppDir/usr/bin/BSM
+
+          mkdir -p AppDir/usr/share/applications
+          echo "[Desktop Entry]
+          Name=BSM
+          Exec=BSM
+          Icon=application-default-icon
+          Type=Application
+          Categories=Utility;" > AppDir/usr/share/applications/BSM.desktop
+
+      - name: Build AppImage
+        run: |
+          ./appimagetool-x86_64.AppImage AppDir BSM.AppImage
+
+      - name: Upload .AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSM.AppImage
+          path: ./BSM.AppImage
